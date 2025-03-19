@@ -1,1 +1,8 @@
 requirements.txt
+📁 ai-wellness-chatbot   <- This is your main project folder
+│── app.py              <- Your chatbot script
+│── requirements.txt    <- Place this file here (NOT in a separate folder)
+│── config.env          <- Optional: API keys stored here
+│── templates/          <- (If you have a web UI)
+│── static/             <- (If you have images or CSS files)
+│── README.md           <- Project documentation
