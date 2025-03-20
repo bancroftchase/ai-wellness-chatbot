@@ -1,0 +1,5 @@
+📁 ai-wellness-chatbot
+│── app.py
+│── requirements.txt
+│── .env (or config.env)
+│── README.md
