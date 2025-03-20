@@ -1,4 +1,7 @@
-│── app.py
-│── requirements.txt
-│── .env (or config.env)
-│── README.md
+flask
+openai
+gunicorn
+python-dotenv
+twilio
+requests
+setuptools
