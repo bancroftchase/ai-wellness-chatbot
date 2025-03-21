@@ -1,3 +1,18 @@
+from flask import Flask, request
+from twilio.twiml.messaging_response import MessagingResponse
+import openai
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "AI Wellness Chatbot is running!"
+
 @app.route("/sms", methods=["POST"])
 def sms_reply():
     incoming_msg = request.form.get("Body", "")
@@ -18,5 +33,6 @@ def sms_reply():
     twilio_response = MessagingResponse()
     twilio_response.message(reply)
     return str(twilio_response)
+
 if __name__ == "__main__":
     app.run(debug=True)
