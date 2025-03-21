@@ -28,7 +28,7 @@ def sms_reply():
         )
         reply = response['choices'][0]['message']['content']
     except Exception as e:
-        reply = "Sorry, I had a problem responding. Please try again."
+        reply = "Sorry, I had a problem responding."
 
     twilio_response = MessagingResponse()
     twilio_response.message(reply)
