@@ -14,7 +14,7 @@ app = Flask(__name__)
 def home():
     return "AI Wellness Chatbot is running!"
 
-@@app.route("/sms", methods=["POST"])
+@app.route("/sms", methods=["POST"])
 def sms_reply():
     incoming_msg = request.form.get("Body", "")
     user_number = request.form.get("From", "")
