@@ -14,7 +14,7 @@ app = Flask(__name__)
 def home():
     return "AI Wellness Chatbot is running!"
 
-@app.route("/sms", methods=["POST"])
+@@app.route("/sms", methods=["POST"])
 def sms_reply():
     incoming_msg = request.form.get("Body", "")
     user_number = request.form.get("From", "")
@@ -22,21 +22,28 @@ def sms_reply():
     try:
         headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://yourdomain.com",  # Optional, or use your GitHub/Render domain
-            "X-Title": "AI Wellness Chatbot"
+            "HTTP-Referer": "https://ai-wellness-chatbot.onrender.com",
+            "X-Title": "AI Wellness Chatbot",
+            "Content-Type": "application/json"
         }
 
         payload = {
-            "model": "openai/gpt-3.5-turbo",  # You can change to other models OpenRouter supports
-            "messages": [{"role": "user", "content": incoming_msg}],
-            "max_tokens": 100
+            "model": "openchat/openchat-3.5-1210",
+            "messages": [
+                {"role": "system", "content": "You are a compassionate AI wellness assistant."},
+                {"role": "user", "content": incoming_msg}
+            ],
+            "max_tokens": 200
         }
 
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         data = response.json()
 
-        reply = data["choices"][0]["message"]["content"]
+        # Check if the structure contains 'choices'
+        if "choices" in data and data["choices"]:
+            reply = data["choices"][0]["message"]["content"]
+        else:
+            reply = "Hmm... something unexpected happened in the response."
 
     except Exception as e:
         import traceback
@@ -48,8 +55,6 @@ def sms_reply():
     twilio_response.message(reply)
     return str(twilio_response)
 
-if __name__ == "__main__":
-    app.run(debug=True)
 
 
 
