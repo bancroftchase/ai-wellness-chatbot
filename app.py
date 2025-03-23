@@ -1,10 +1,10 @@
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 import os
-import requests
 from dotenv import load_dotenv
+import requests
 
-# Load environment variables
+# Load your API key from the .env file
 load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
 
@@ -12,30 +12,34 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "AI Wellness Chatbot is running!"
+    return "AI Wellness Chatbot is live!"
 
 @app.route("/sms", methods=["POST"])
 def sms_reply():
     incoming_msg = request.form.get("Body", "")
     user_number = request.form.get("From", "")
-    
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://ai-wellness-chatbot.onrender.com",  # required by OpenRouter
+        "X-Title": "AI Wellness Chatbot"
+    }
+
+    data = {
+        "model": "openai/gpt-3.5-turbo",  # Or try another model like 'mistralai/mistral-7b-instruct'
+        "messages": [
+            {"role": "user", "content": incoming_msg}
+        ]
+    }
+
     try:
-        payload = {
-            "model": "openai/gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": incoming_msg}],
-            "max_tokens": 200
-        }
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+        result = response.json()
 
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
+        # OpenRouter returns the response in result['choices'][0]['message']['content']
+        reply = result["choices"][0]["message"]["content"]
 
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
-        data = response.json()
-
-        # Extract message content
-        reply = data["choices"][0]["message"]["content"]
     except Exception as e:
         import traceback
         print("🔴 OpenRouter API Error:")
