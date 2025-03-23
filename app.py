@@ -1,11 +1,11 @@
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 import os
-from dotenv import load_dotenv
 import requests
+from dotenv import load_dotenv
 
 load_dotenv()
-CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+claude_api_key = os.getenv("CLAUDE_API_KEY")
 
 app = Flask(__name__)
 
@@ -16,32 +16,35 @@ def home():
 @app.route("/sms", methods=["POST"])
 def sms_reply():
     incoming_msg = request.form.get("Body", "")
-    twilio_response = MessagingResponse()
+    user_number = request.form.get("From", "")
 
     try:
         headers = {
-            "x-api-key": CLAUDE_API_KEY,
+            "x-api-key": claude_api_key,
             "anthropic-version": "2023-06-01",
             "content-type": "application/json"
         }
 
-        payload = {
-            "model": "claude-3-haiku-20240307",
-            "max_tokens": 100,
-            "temperature": 0.7,
+        data = {
+            "model": "claude-2.1",
+            "max_tokens": 300,
+            "temperature": 0.6,
             "messages": [
-                {"role": "user", "content": f"You are a wellness assistant. Help this user: {incoming_msg}"}
+                {
+                    "role": "user",
+                    "content": f"You are a helpful wellness assistant. Help this person with their question: {incoming_msg}"
+                }
             ]
         }
 
-        response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload)
-        data = response.json()
+        response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
+        result = response.json()
+        reply = result.get("content", [{"text": "Sorry, I had a problem responding."}])[0]["text"]
 
-        reply = data.get("content", [{"text": "No response"}])[0].get("text", "No reply found.")
     except Exception as e:
-        print("Error:", e)
         reply = "Sorry, I had a problem responding."
 
+    twilio_response = MessagingResponse()
     twilio_response.message(reply)
     return str(twilio_response)
 
