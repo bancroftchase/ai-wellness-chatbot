@@ -1,3 +1,20 @@
+from flask import Flask, request
+from twilio.twiml.messaging_response import MessagingResponse
+import os
+from dotenv import load_dotenv
+import requests
+
+# Load environment variables
+load_dotenv()
+api_key = os.getenv("OPENROUTER_API_KEY")
+
+app = Flask(__name__)
+
+@app.route("/sms", methods=["POST"])
+def sms_reply():
+    incoming_msg = request.form.get("Body", "")
+    user_number = request.form.get("From", "")
+
     try:
         payload = {
             "model": "openrouter/mistralai/mistral-7b-instruct",
@@ -30,7 +47,9 @@
         traceback.print_exc()
         reply = f"Error: {str(e)}"
 
-
+    twilio_response = MessagingResponse()
+    twilio_response.message(reply)
+    return str(twilio_response)
 
 
 
