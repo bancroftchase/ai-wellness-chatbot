@@ -4,11 +4,10 @@ import os
 from dotenv import load_dotenv
 import requests
 
-# Load the API key from .env
+# Load the API key from the .env file
 load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
 
-# ✅ Define Flask app BEFORE routes
 app = Flask(__name__)
 
 @app.route("/")
@@ -23,26 +22,27 @@ def sms_reply():
     try:
         headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://yourdomain.com",  # Optional, or use your GitHub/Render domain
+            "X-Title": "AI Wellness Chatbot"
         }
 
         payload = {
-            "model": "openai/gpt-3.5-turbo",
-            "messages": [
-                {"role": "user", "content": incoming_msg}
-            ],
-            "max_tokens": 150
+            "model": "openai/gpt-3.5-turbo",  # You can change to other models OpenRouter supports
+            "messages": [{"role": "user", "content": incoming_msg}],
+            "max_tokens": 100
         }
 
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
-        result = response.json()
-        reply = result["choices"][0]["message"]["content"]
+        data = response.json()
+
+        reply = data["choices"][0]["message"]["content"]
 
     except Exception as e:
         import traceback
         print("🔴 OpenRouter API Error:")
         traceback.print_exc()
-        reply = f"Error: {str(e)}"
+        reply = f"Sorry, I had a problem responding: {str(e)}"
 
     twilio_response = MessagingResponse()
     twilio_response.message(reply)
