@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 import requests
 
-# Load your API key from the .env file
+# Load API key from .env
 load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
 
@@ -22,23 +22,25 @@ def sms_reply():
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://ai-wellness-chatbot.onrender.com",  # required by OpenRouter
+        "HTTP-Referer": "https://ai-wellness-chatbot.onrender.com",
         "X-Title": "AI Wellness Chatbot"
     }
 
-    data = {
-        "model": "openai/gpt-3.5-turbo",  # Or try another model like 'mistralai/mistral-7b-instruct'
-        "messages": [
-            {"role": "user", "content": incoming_msg}
-        ]
+    payload = {
+        "model": "openai/gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": incoming_msg}],
+        "max_tokens": 300
     }
 
     try:
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         result = response.json()
 
-        # OpenRouter returns the response in result['choices'][0]['message']['content']
-        reply = result["choices"][0]["message"]["content"]
+        # ✅ Safely access the content
+        if "choices" in result and result["choices"]:
+            reply = result["choices"][0]["message"]["content"]
+        else:
+            reply = "Hmm... something unexpected happened in the response."
 
     except Exception as e:
         import traceback
