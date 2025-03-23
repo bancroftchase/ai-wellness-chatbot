@@ -1,8 +1,3 @@
-@app.route("/sms", methods=["POST"])
-def sms_reply():
-    incoming_msg = request.form.get("Body", "")
-    user_number = request.form.get("From", "")
-
     try:
         payload = {
             "model": "openrouter/mistralai/mistral-7b-instruct",
@@ -21,20 +16,19 @@ def sms_reply():
 
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         response_json = response.json()
-        print("🔵 Full OpenRouter Response:", response_json)
+        print("🔵 FULL API RESPONSE:\n", response_json)
 
-        # Extract the response safely
-        reply = response_json.get("choices", [{}])[0].get("message", {}).get("content", "Sorry, I couldn’t understand that.")
+        if "choices" in response_json and response_json["choices"]:
+            reply = response_json["choices"][0]["message"]["content"]
+        else:
+            print("⚠️ 'choices' missing or empty in response!")
+            reply = "Hmm... something unexpected happened in the response."
 
     except Exception as e:
         import traceback
-        print("🔴 OpenRouter API Error:")
+        print("🔴 Exception occurred:")
         traceback.print_exc()
         reply = f"Error: {str(e)}"
-
-    twilio_response = MessagingResponse()
-    twilio_response.message(reply)
-    return str(twilio_response)
 
 
 
