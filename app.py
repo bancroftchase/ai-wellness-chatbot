@@ -4,10 +4,11 @@ import os
 from dotenv import load_dotenv
 import requests
 
-# Load environment variables
+# Load environment variables from .env
 load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
 
+# Initialize Flask app
 app = Flask(__name__)
 
 @app.route("/sms", methods=["POST"])
@@ -16,14 +17,16 @@ def sms_reply():
     user_number = request.form.get("From", "")
 
     try:
+        # Prepare payload for OpenRouter
         payload = {
-    "model": "openrouter/openai/gpt-3.5-turbo",
-    "messages": [
-        {"role": "user", "content": incoming_msg}
-    ],
-    "max_tokens": 200
-}
+            "model": "mistralai/mistral-7b-instruct",
+            "messages": [
+                {"role": "user", "content": incoming_msg}
+            ],
+            "max_tokens": 200
+        }
 
+        # Prepare headers as required by OpenRouter
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -31,10 +34,12 @@ def sms_reply():
             "X-Title": "AI Wellness Chatbot"
         }
 
+        # Send request to OpenRouter
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         response_json = response.json()
-        print("🔵 FULL API RESPONSE:\n", response_json)
+        print("🔵 FULL API RESPONSE:", response_json)
 
+        # Extract response safely
         if "choices" in response_json and response_json["choices"]:
             reply = response_json["choices"][0]["message"]["content"]
         else:
@@ -47,9 +52,16 @@ def sms_reply():
         traceback.print_exc()
         reply = f"Error: {str(e)}"
 
+    # Create Twilio response
     twilio_response = MessagingResponse()
     twilio_response.message(reply)
     return str(twilio_response)
+
+# Only for local testing (ignored by Render)
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
 
 
 
