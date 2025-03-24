@@ -15,14 +15,14 @@ def sms_reply():
     incoming_msg = request.form.get("Body", "")
     user_number = request.form.get("From", "")
 
-try:
-    payload = {
-        "model": "mistralai/mistral-7b-instruct",
-        "messages": [
-            {"role": "user", "content": incoming_msg}
-        ],
-        "max_tokens": 200
-    }
+    try:
+        payload = {
+            "model": "mistralai/mistral-7b-instruct",
+            "messages": [
+                {"role": "user", "content": incoming_msg}
+            ],
+            "max_tokens": 200
+        }
 
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -50,6 +50,7 @@ try:
     twilio_response = MessagingResponse()
     twilio_response.message(reply)
     return str(twilio_response)
+
 
 
 
