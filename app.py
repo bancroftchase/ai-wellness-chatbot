@@ -7,6 +7,7 @@ import requests
 # Load environment variables from .env
 load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
+print("🔐 Loaded API Key:", api_key)  # <-- This is the debug line
 
 # Initialize Flask app
 app = Flask(__name__)
