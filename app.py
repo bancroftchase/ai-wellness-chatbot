@@ -4,10 +4,11 @@ import os
 from dotenv import load_dotenv
 import requests
 
-# Load environment variables from .env
+from dotenv import load_dotenv
+import os
 load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
-print("🔐 Loaded API Key:", api_key)  # <-- This is the debug line
+print(f"🔐 Loaded API Key: {api_key}")  # This helps confirm it's loaded
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -36,10 +37,12 @@ def sms_reply():
         }
 
         # Send request to OpenRouter
+        
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         response_json = response.json()
         print("🔵 FULL API RESPONSE:", response_json)
-
+        print("🚀 Making API call with headers:", headers)
+        print("📦 Payload:", payload)
         # Extract response safely
         if "choices" in response_json and response_json["choices"]:
             reply = response_json["choices"][0]["message"]["content"]
