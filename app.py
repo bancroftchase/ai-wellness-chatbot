@@ -6,11 +6,12 @@ import requests
 
 from dotenv import load_dotenv
 import os
-load_dotenv()
-api_key = os.getenv("OPENROUTER_API_KEY")
-print(f"🔐 Loaded API Key: {api_key}")  # This helps confirm it's loaded
 
-# Initialize Flask app
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+print(f"🔐 Loaded API Key: {api_key}")
+
+Initialize Flask app
 app = Flask(__name__)
 
 @app.route("/sms", methods=["POST"])
@@ -19,7 +20,7 @@ def sms_reply():
     user_number = request.form.get("From", "")
 
     try:
-        # Prepare payload for OpenRouter
+        Prepare payload for OpenRouter
         payload = {
             "model": "mistralai/mistral-7b-instruct",
             "messages": [
@@ -28,7 +29,7 @@ def sms_reply():
             "max_tokens": 200
         }
 
-        # Prepare headers as required by OpenRouter
+        Prepare headers as required by OpenRouter
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -36,14 +37,14 @@ def sms_reply():
             "X-Title": "AI Wellness Chatbot"
         }
 
-        # Send request to OpenRouter
+        Send request to OpenRouter
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         response_json = response.json()
         print("🔵 FULL API RESPONSE:", response_json)
         print("🚀 Making API call with headers:", headers)
         print("📦 Payload:", payload)
-        # Extract response safely
+        Extract response safely
         if "choices" in response_json and response_json["choices"]:
             reply = response_json["choices"][0]["message"]["content"]
         else:
@@ -56,12 +57,12 @@ def sms_reply():
         traceback.print_exc()
         reply = f"Error: {str(e)}"
 
-    # Create Twilio response
+    Create Twilio response
     twilio_response = MessagingResponse()
     twilio_response.message(reply)
     return str(twilio_response)
 
-# Only for local testing (ignored by Render)
+Only for local testing (ignored by Render)
 if __name__ == "__main__":
     app.run(debug=True)
 
