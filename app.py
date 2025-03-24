@@ -17,12 +17,12 @@ def sms_reply():
 
     try:
         payload = {
-            "model": "mistralai/mistral-7b-instruct",
-            "messages": [
-                {"role": "user", "content": incoming_msg}
-            ],
-            "max_tokens": 200
-        }
+    "model": "openrouter/openai/gpt-3.5-turbo",
+    "messages": [
+        {"role": "user", "content": incoming_msg}
+    ],
+    "max_tokens": 200
+}
 
         headers = {
             "Authorization": f"Bearer {api_key}",
