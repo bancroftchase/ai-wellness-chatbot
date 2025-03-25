@@ -1,16 +1,11 @@
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-import os
-from dotenv import load_dotenv
-import requests
+import request
 
 from dotenv import load_dotenv
-import os
-
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 print(f"🔐 Loaded API Key: {api_key}")
-
 Initialize Flask app
 app = Flask(__name__)
 
