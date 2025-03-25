@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 print(f"🔐 Loaded API Key: {api_key}")
-Initialize Flask app
+# Initialize Flask app
 app = Flask(__name__)
 
 @app.route("/sms", methods=["POST"])
