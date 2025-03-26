@@ -4,6 +4,11 @@ import os
 import requests
 from dotenv import load_dotenv
 import traceback
+import logging
+
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -16,7 +21,10 @@ api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     raise ValueError("No OPENAI_API_KEY found in environment variables")
 
-print(f"🔐 Loaded API Key: {'*' * 12}{api_key[-4:]}")  # Show only last 4 chars for security
+logger.info("🔐 API Key loaded successfully")
+
+# Your Railway URL (UPDATE THIS TO YOUR ACTUAL RAILWAY URL)
+RAILWAY_URL = "https://your-app-name.up.railway.app"  # ⚠️ Change this!
 
 @app.route("/sms", methods=["POST"])
 def sms_reply():
@@ -39,11 +47,11 @@ def sms_reply():
             "max_tokens": 200
         }
 
-        # Prepare headers
+        # Prepare headers with YOUR Railway URL
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://ai-wellness-chatbot.onrender.com",
+            "HTTP-Referer": RAILWAY_URL,
             "X-Title": "AI Wellness Chatbot"
         }
 
@@ -57,34 +65,27 @@ def sms_reply():
         response.raise_for_status()  # Raise exception for HTTP errors
         response_json = response.json()
 
-        # Debug logging
-        app.logger.debug("API Response: %s", response_json)
+        logger.debug("API Response: %s", response_json)
 
         # Extract response safely
         if "choices" in response_json and response_json["choices"]:
             reply = response_json["choices"][0]["message"]["content"]
         else:
-            app.logger.error("Unexpected API response format: %s", response_json)
+            logger.error("Unexpected API response format: %s", response_json)
             reply = "I couldn't process that request. Please try again."
 
     except requests.exceptions.RequestException as e:
-        app.logger.error("API request failed: %s", str(e))
+        logger.error("API request failed: %s", str(e))
         reply = "Sorry, I'm having trouble connecting to the service right now."
     except Exception as e:
-        app.logger.error("Unexpected error: %s", traceback.format_exc())
+        logger.error("Unexpected error: %s", traceback.format_exc())
         reply = "An unexpected error occurred. Please try again later."
 
     twilio_response.message(reply)
     return str(twilio_response)
 
 if __name__ == "__main__":
-    app.run(debug=os.getenv("DEBUG", "false").lower() == "true")
-
-
-
-
-
-
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=os.getenv("DEBUG", "false").lower() == "true")
 
 
