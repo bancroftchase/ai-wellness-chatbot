@@ -3,22 +3,23 @@ from twilio.twiml.messaging_response import MessagingResponse
 import os
 import requests
 from dotenv import load_dotenv
-import traceback
+from pathlib import Path
 
-# Initialize the Flask application
+# Initialize Flask application
 app = Flask(__name__)
 
 # Load environment variables
-load_dotenv()
+env_path = Path(__file__).parent / '.env'
+load_dotenv(env_path)
 
 # Configure API settings
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     raise RuntimeError("API key not found in environment variables")
 
 # Application configuration
 APP_CONFIG = {
-    "railway_url": "https://your-app-name.up.railway.app",  # UPDATE THIS
+    "railway_url": "https://your-app-name.up.railway.app",
     "api_endpoint": "https://openrouter.ai/api/v1/chat/completions",
     "model": "mistralai/mistral-7b-instruct",
     "timeout": 10
@@ -28,8 +29,6 @@ APP_CONFIG = {
 def handle_sms():
     """Process incoming SMS messages"""
     message = request.form.get("Body", "").strip()
-    sender = request.form.get("From", "")
-    
     response = MessagingResponse()
     
     if not message:
@@ -37,7 +36,6 @@ def handle_sms():
         return str(response)
 
     try:
-        # Prepare API request
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -51,7 +49,6 @@ def handle_sms():
             "max_tokens": 200
         }
 
-        # Make API call
         api_response = requests.post(
             APP_CONFIG["api_endpoint"],
             headers=headers,
@@ -60,17 +57,12 @@ def handle_sms():
         )
         api_response.raise_for_status()
         
-        # Process response
-        response_data = api_response.json()
-        if response_data.get("choices"):
-            reply = response_data["choices"][0]["message"]["content"]
-        else:
-            reply = "I couldn't process your request. Please try again."
+        reply = api_response.json()["choices"][0]["message"]["content"]
 
-    except requests.exceptions.RequestException:
-        reply = "Service temporarily unavailable. Please try later."
-    except Exception:
-        reply = "An internal error occurred. Please try again."
+    except requests.exceptions.RequestException as e:
+        reply = f"API Error: {str(e)}"
+    except Exception as e:
+        reply = f"Unexpected Error: {str(e)}"
 
     response.message(reply)
     return str(response)
