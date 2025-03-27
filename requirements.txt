@@ -1,5 +1,5 @@
-Flask
-python-dotenv
-requests
+flask
 twilio
-gunicorn
+requests
+python-dotenv
+waitress
